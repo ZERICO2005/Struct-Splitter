@@ -9,6 +9,15 @@
 #include "Split_Def.h"
 #include "input.h"
 
+/* Sets Print_Language to lang_C if it is not defined or set */
+#ifndef Print_Language
+	#define Print_Language lang_C
+#endif
+#if ~(~Print_Language + 0) == 0 && ~(~Print_Language + 1)
+	#undef Print_Language
+	#define Print_Language lang_C
+#endif
+
 size_t Input_Struct_Size = sizeof(Input_Struct);
 size_t Input_Struct_Len = 0; /* Set as part of the input validation process */
 size_t Input_Type_Size = sizeof(Input_Type);
@@ -159,6 +168,40 @@ size_t getTypeLength(const char* t) {
 	printError("Unknown format \"%s\"",t);
 	return 0;
 }
+void printIntegerTypeName(size_t size, int sign) { /* -1 signed, 0 null, 1 unsigned */
+	#if Print_Language == lang_Java
+		if (size <= 1) { printf("byte"); return; }
+		if (size <= 2) { printf("short"); return; }
+		if (size <= 4) { printf("int"); return; }
+		printf("long");
+	#elif Print_Language == lang_C
+		#ifdef Use_stdint_data_types
+			if (sign == 1) { printf("u"); }
+			if (size <= 1) { printf("int8_t"); return; }
+			if (size <= 2) { printf("int16_t"); return; }
+			if (size <= 4) { printf("int32_t"); return; }
+			printf("int64_t");
+		#else
+			if (sign == -1) { printf("signed"); } else
+			if (sign == 1) { printf("unsigned"); }
+			if (size <= sizeof(char)) { printf("char"); return; }
+			if (size <= sizeof(short)) { printf("short"); return; }
+			if (size <= sizeof(int)) { printf("int"); return; }
+			if (size <= sizeof(long)) { printf("long"); return; }
+			printf("long long");
+		#endif
+	#endif
+}
+
+void printFloatType(size_t size) {
+	if (size <= sizeof(float)) { printf("float"); return; }
+	if (size <= sizeof(double)) { printf("double"); return; }
+	#if Print_Language == lang_C	
+		printf("long ");
+	#endif
+	printf("double");
+}
+
 void printTypeName(const char* t) {
 	#define conText(a,b) containsText(a,strlen(a),b,TEXT_LENGTH(b))
 	size_t formatCount = 0;
@@ -168,45 +211,53 @@ void printTypeName(const char* t) {
 		i++;
 	}
 	if (formatCount != 1) { return; }
-	if (conText(t,"s")) { printf("char* "); return; }
-	if (conText(t,"c")) { printf("char "); return; }
-	if (conText(t,"p")) { printf("void* "); return; }
+	#if Print_Language == lang_C
+		if (conText(t,"s")) { printf("char* "); return; }
+		if (conText(t,"c")) { printf("char "); return; }
+		if (conText(t,"p")) { printf("void* "); return; }
+	#elif Print_Language == lang_Java
+		if (conText(t,"s")) { printf("String"); return; }
+		if (conText(t,"c")) { printf("char"); return; }
+	#elif Print_Language == lang_CSharp
+		if (conText(t,"s")) { printf("string"); return; }
+		if (conText(t,"c")) { printf("char"); return; }
+	#endif
 	/* decimal */
-	if (conText(t,"hhd")) { printf("char "); return; }
-	if (conText(t,"lld")) { printf("long long "); return; }
-	if (conText(t,"hd")) { printf("short "); return; }
-	if (conText(t,"ld")) { printf("long "); return; }
-	if (conText(t,"d")) { printf("int "); return; }
+	if (conText(t,"hhd")) { printIntegerTypeName(sizeof(char),0); return; }
+	if (conText(t,"lld")) { printIntegerTypeName(sizeof(long long),0); return; }
+	if (conText(t,"hd")) { printIntegerTypeName(sizeof(short),0); return; }
+	if (conText(t,"ld")) { printIntegerTypeName(sizeof(long),0); return; }
+	if (conText(t,"d")) { printIntegerTypeName(sizeof(int),0); return; }
 	/* integer */
-	if (conText(t,"hhi")) { printf("signed char "); return; }
-	if (conText(t,"lli")) { printf("signed long long "); return; }
-	if (conText(t,"hi")) { printf("signed short "); return; }
-	if (conText(t,"li")) { printf("signed long "); return; }
-	if (conText(t,"i")) { printf("signed int "); return; }
+	if (conText(t,"hhi")) { printIntegerTypeName(sizeof(signed char),-1); return; }
+	if (conText(t,"lli")) { printIntegerTypeName(sizeof(signed long long),-1); return; }
+	if (conText(t,"hi")) { printIntegerTypeName(sizeof(signed short),-1); return; }
+	if (conText(t,"li")) { printIntegerTypeName(sizeof(signed long),-1); return; }
+	if (conText(t,"i")) { printIntegerTypeName(sizeof(signed int),-1); return; }
 	/* unsigned */
-	if (conText(t,"hhu")) { printf("unsigned char "); return; }
-	if (conText(t,"llu")) { printf("unsigned long long "); return; }
-	if (conText(t,"hu")) { printf("unsigned short "); return; }
-	if (conText(t,"lu")) { printf("unsigned long "); return; }
-	if (conText(t,"u")) { printf("unsigned int "); return; }
+	if (conText(t,"hhu")) { printIntegerTypeName(sizeof(unsigned char),1); return; }
+	if (conText(t,"llu")) { printIntegerTypeName(sizeof(unsigned long long),1); return; }
+	if (conText(t,"hu")) { printIntegerTypeName(sizeof(unsigned short),1); return; }
+	if (conText(t,"lu")) { printIntegerTypeName(sizeof(unsigned long),1); return; }
+	if (conText(t,"u")) { printIntegerTypeName(sizeof(unsigned int),1); return; }
 	/* octal */
-	if (conText(t,"hho")) { printf("unsigned char "); return; }
-	if (conText(t,"llo")) { printf("unsigned long long "); return; }
-	if (conText(t,"ho")) { printf("unsigned short "); return; }
-	if (conText(t,"lo")) { printf("unsigned long "); return; }
-	if (conText(t,"o")) { printf("unsigned int "); return; }
+	if (conText(t,"hho")) { printIntegerTypeName(sizeof(unsigned char),1); return; }
+	if (conText(t,"llo")) { printIntegerTypeName(sizeof(unsigned long long),1); return; }
+	if (conText(t,"ho")) { printIntegerTypeName(sizeof(unsigned short),1); return; }
+	if (conText(t,"lo")) { printIntegerTypeName(sizeof(unsigned long),1); return; }
+	if (conText(t,"o")) { printIntegerTypeName(sizeof(unsigned int),1); return; }
 	/* HEXADECIMAL */
-	if (conText(t,"hhX")) { printf("unsigned char "); return; }
-	if (conText(t,"llX")) { printf("unsigned long long "); return; }
-	if (conText(t,"hX")) { printf("unsigned short "); return; }
-	if (conText(t,"lX")) { printf("unsigned long "); return; }
-	if (conText(t,"X")) { printf("unsigned int "); return; }
+	if (conText(t,"hhX")) { printIntegerTypeName(sizeof(unsigned char),1); return; }
+	if (conText(t,"llX")) { printIntegerTypeName(sizeof(unsigned long long),1); return; }
+	if (conText(t,"hX")) { printIntegerTypeName(sizeof(unsigned short),1); return; }
+	if (conText(t,"lX")) { printIntegerTypeName(sizeof(unsigned long),1); return; }
+	if (conText(t,"X")) { printIntegerTypeName(sizeof(unsigned int),1); return; }
 	/* hexadecimal */
-	if (conText(t,"hhx")) { printf("unsigned char "); return; }
-	if (conText(t,"llx")) { printf("unsigned long long "); return; }
-	if (conText(t,"hx")) { printf("unsigned short "); return; }
-	if (conText(t,"lx")) { printf("unsigned long "); return; }
-	if (conText(t,"x")) { printf("unsigned int "); return; }
+	if (conText(t,"hhx")) { printIntegerTypeName(sizeof(unsigned char),1); return; }
+	if (conText(t,"llx")) { printIntegerTypeName(sizeof(unsigned long long),1); return; }
+	if (conText(t,"hx")) { printIntegerTypeName(sizeof(unsigned short),1); return; }
+	if (conText(t,"lx")) { printIntegerTypeName(sizeof(unsigned long),1); return; }
+	if (conText(t,"x")) { printIntegerTypeName(sizeof(unsigned int),1); return; }
 	/* decimal float */
 	if (conText(t,"Lf")) { printf("long double "); return; }
 	if (conText(t,"lf")) { printf("double "); return; }
@@ -282,7 +333,7 @@ int validateInput() {
 
 void printfEscapeCode(char c) {
 	if (c == '\n') {
-		#ifdef Print_JS_Arrays
+		#if Print_Language == lang_JS
 			printf("<br>");
 		#else
 			printf("\\n");
@@ -317,23 +368,50 @@ int printfSpecial(char* text) {
 	return 0;
 }
 
-int printStruct() {
+#ifdef Use_const_type
+	#if Print_Language == lang_Java
+		#define const_type_text "final "
+	#else
+		#define const_type_text "const "
+	#endif
+#endif
+#if Print_Language == lang_JS
+	#ifndef const_type_text
+		#ifdef Use_var_instead_of_let
+			#define JS_type "var "
+		#else
+			#define JS_type "let "
+		#endif
+	#endif
+#endif
+
+void printStruct() {
 	uint8_t* ptr = (uint8_t*)Input_Data;
 	size_t offset = 0;
 	size_t structPos = 0;
 	//printf("\nInput_Data Address: %p\n",&Input_Data);
 	for (size_t t = 0; t < Input_Type_Len; t++) {
 		printf("\n");
-		#ifdef Print_JS_Arrays
+		#ifdef Use_const_type
+			printf(const_type_text);
+		#endif
+		#if Print_Language == lang_C
 			#ifdef Automatically_insert_data_types
-				printf("let ");
+				printTypeName(Input_Type[t]);
+				printf(" ");
+			#endif
+			printf("%s[%llu] = {",Input_Name[t],Input_Data_Len);
+		#elif Print_Language == lang_JS
+			#ifdef JS_type
+				printf(JS_type);
 			#endif
 			printf("%s = [",Input_Name[t],Input_Data_Len);
 		#else
 			#ifdef Automatically_insert_data_types
 				printTypeName(Input_Type[t]);
+				printf("[] ");
 			#endif
-			printf("%s[%llu] = {",Input_Name[t],Input_Data_Len);
+			printf("%s = {",Input_Name[t],Input_Data_Len);
 		#endif
 		size_t typeLength = getTypeLength(Input_Type[t]);
 		uint8_t quotations = 0;
@@ -376,7 +454,7 @@ int printStruct() {
 		#ifdef Print_array_elements_on_separate_lines
 			printf("\n");
 		#endif
-		#ifdef Print_JS_Arrays
+		#if Print_Language == lang_JS
 			printf("];");
 		#else
 			printf("};");
@@ -386,6 +464,10 @@ int printStruct() {
 }
 
 int main() {
+	#if Print_Language >= lang_COUNT || Print_Language < 0
+		printError("Invalid value for \"#define Print_Language\"");
+		return -1;
+	#endif
 	printF("\nStruct Splitter v%s | zerico2005 | %s\n",STRUCT_SPLITTER_VERSION,STRUCT_SPLITTER_DATE);
 	if (validateInput() != 0) {
 		return -1;

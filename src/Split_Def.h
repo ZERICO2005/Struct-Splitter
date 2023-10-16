@@ -21,9 +21,9 @@
 
 /* Constants */
 
-#define STRUCT_SPLITTER_DATE "2023/10/15" /* YYYY/MM/DD */
+#define STRUCT_SPLITTER_DATE "2023/10/16" /* YYYY/MM/DD */
 #define STRUCT_SPLITTER_V_MAJOR 1
-#define STRUCT_SPLITTER_V_MINOR 0
+#define STRUCT_SPLITTER_V_MINOR 1
 #define STRUCT_SPLITTER_V_PATCH 0
 
 /* Macros */
@@ -39,5 +39,21 @@
 #define printError(...) printf("\nError: "); printf(__VA_ARGS__); printf("\n"); fflush(stdout)
 
 #define STRUCT_SPLITTER_VERSION STR_N(STRUCT_SPLITTER_V_MAJOR) "." STR_N(STRUCT_SPLITTER_V_MINOR) "." STR_N(STRUCT_SPLITTER_V_PATCH)
+
+/* Languages */
+
+#define lang_C 0
+#define lang_CPP lang_C
+#define lang_CPlusPlus lang_C
+
+#define lang_JS 1
+#define lang_JavaScript lang_JS
+
+#define lang_Java 2
+
+#define lang_CSharp 3
+#define lang_CS lang_CSharp
+
+#define lang_COUNT 4
 
 #endif /* SPLIT_DEF_H */

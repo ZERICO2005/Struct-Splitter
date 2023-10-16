@@ -1,0 +1,9 @@
+Struct-Splitter Update-Log
+
+v1.1.0 | 2023/10/16
+	- Exporting Java and C# Parallel Arrays
+	- Option to print stdint data types instead of int/short/long
+	- Added const type modifer
+	- Fixed Makefile
+v1.0.0 | 2023/10/15
+	Published Struct-Splitter
