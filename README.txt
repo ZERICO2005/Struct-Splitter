@@ -1,8 +1,8 @@
-Struct-Splitter v1.0.0 | zerico2005 | 2023/10/15
+Struct-Splitter v1.1.0 | zerico2005 | 2023/10/16
 
-Struct-Splitter is a simple tool designed to split a struct into multiple parrell arrays.
+Struct-Splitter is a simple tool designed to split a C/C++ struct into multiple parrell arrays.
 
-To use it, manually type in the struct information into input.h, then compile and run the program. (Program was compiled using MSYS2 Mingw64 GCC on Windows 10)
+To use it, manually type the struct information and parameters into input.h, then compile and run the program. (Program was compiled using MSYS2 Mingw64 GCC on Windows 10)
 
 In input.h, there is 5 steps to follow:
 	Step 0:
